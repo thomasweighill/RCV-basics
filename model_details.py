@@ -249,7 +249,7 @@ def BABABA(
         poc_elected_bababa[scenario].append(len([w for w in winners if w[0]=='A']))
     return poc_elected_bababa
 
-def luce(
+def luce_gaussian(
     poc_share = 0.33,
     poc_support_for_poc_candidates = 0.7,
     poc_support_for_white_candidates = 0.3,
@@ -292,6 +292,63 @@ def luce(
     #simulate
     poc_elected_luce = []
     for n in range(num_simulations):
+        print(".",end="")
+        ballots = []
+        numballots = num_ballots
+        #white
+        for i in range(int(numballots*(1-poc_share))):
+          ballots.append(
+              np.random.choice(list(race_of_candidate.keys()), size=len(race_of_candidate), p=white_support_vector, replace=False)
+          )
+        #poc
+        for i in range(int(numballots*poc_share)):
+          ballots.append(
+              np.random.choice(list(race_of_candidate.keys()), size=len(race_of_candidate), p=poc_support_vector, replace=False)
+          )
+        #winners
+        winners = cw.rcv_run(ballots, candidates, seats_open, cincinnati_transfer)
+        poc_elected_luce.append(len([w for w in winners if w[0]=='A']))
+
+    return poc_elected_luce
+
+def luce_dirichlet(
+    poc_share = 0.33,
+    poc_support_for_poc_candidates = 0.7,
+    poc_support_for_white_candidates = 0.3,
+    white_support_for_white_candidates = 0.8,
+    white_support_for_poc_candidates = 0.2,
+    num_ballots = 1000,
+    num_simulations = 100,
+    seats_open = 3,
+    num_poc_candidates = 2,
+    num_white_candidates = 3,
+    concentration = 1
+):
+    alpha = concentration
+    candidates = ['A'+str(x) for x in range(num_poc_candidates)]+['B'+str(x) for x in range(num_white_candidates)]
+    race_of_candidate = {x:x[0] for x in candidates}
+    white_support_vector = [-1 for c in candidates]
+    poc_support_vector = [-1 for c in candidates]
+
+    noise0 = list(np.random.dirichlet([alpha]*num_candidates[0]))+list(np.random.dirichlet([alpha]*num_candidates[1]))
+    noise1 = list(np.random.dirichlet([alpha]*num_candidates[0]))+list(np.random.dirichlet([alpha]*num_candidates[1]))
+    support_vec = {
+        0:{
+            x:(preference_strengths[0]*int(i<num_candidates[0])
+            +(1-preference_strengths[0])*int(i>=num_candidates[0]))*noise0[i]
+            for i, x in enumerate(candidates)
+        },
+        1:{
+            x:((1-preference_strengths[1])*int(i<num_candidates[0])+
+            preference_strengths[1]*int(i>=num_candidates[0]))*noise1[i]
+            for i, x in enumerate(candidates)
+        },
+    }
+
+    #simulate
+    poc_elected_luce = []
+    for n in range(num_simulations):
+        print(".",end="")
         ballots = []
         numballots = num_ballots
         #white
