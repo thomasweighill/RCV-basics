@@ -333,18 +333,15 @@ def luce_dirichlet(
 
     noise0 = list(np.random.dirichlet([alpha]*num_candidates[0]))+list(np.random.dirichlet([alpha]*num_candidates[1]))
     noise1 = list(np.random.dirichlet([alpha]*num_candidates[0]))+list(np.random.dirichlet([alpha]*num_candidates[1]))
-    support_vec = {
-        0:{
-            x:(preference_strengths[0]*int(i<num_candidates[0])
-            +(1-preference_strengths[0])*int(i>=num_candidates[0]))*noise0[i]
-            for i, x in enumerate(candidates)
-        },
-        1:{
-            x:((1-preference_strengths[1])*int(i<num_candidates[0])+
-            preference_strengths[1]*int(i>=num_candidates[0]))*noise1[i]
-            for i, x in enumerate(candidates)
-        },
-    }
+    white_support_vector = []
+    poc_support_vector = []
+    for i, (c, r) in enumerate(race_of_candidate.items()):
+        if r == 'A':
+            white_support_vector.append((white_support_for_poc_candidates*noise0[i]))
+            poc_support_vector.append((poc_support_for_poc_candidates*noise1[i]))
+        elif r == 'B':
+            white_support_vector.append((white_support_for_white_candidates*noise0[i]))
+            poc_support_vector.append((poc_support_for_white_candidates*noise1[i]))
 
     #simulate
     poc_elected_luce = []
