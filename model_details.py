@@ -260,7 +260,6 @@ def luce(
     seats_open = 3,
     num_poc_candidates = 2,
     num_white_candidates = 3,
-    scenarios_to_run = ['A', 'B', 'C', 'D'],
     standard_deviation = 0.1
 ):
     candidates = ['A'+str(x) for x in range(num_poc_candidates)]+['B'+str(x) for x in range(num_white_candidates)]
@@ -278,12 +277,12 @@ def luce(
         noise0 = np.random.normal(0,standard_deviation,size=len(candidates))
         noise1 = np.random.normal(0,standard_deviation,size=len(candidates))
         for i, (c, r) in enumerate(race_of_candidate.items()):
-        if r == 'A':
-          white_support_vector.append((white_support_for_poc_candidates+noise0[i])/num_poc_candidates)
-          poc_support_vector.append((poc_support_for_poc_candidates+noise1[i])/num_poc_candidates)
-        elif r == 'B':
-          white_support_vector.append((white_support_for_white_candidates+noise0[i])/num_white_candidates)
-          poc_support_vector.append((poc_support_for_white_candidates+noise1[i])/num_white_candidates)
+            if r == 'A':
+                white_support_vector.append((white_support_for_poc_candidates+noise0[i])/num_poc_candidates)
+                poc_support_vector.append((poc_support_for_poc_candidates+noise1[i])/num_poc_candidates)
+            elif r == 'B':
+                white_support_vector.append((white_support_for_white_candidates+noise0[i])/num_white_candidates)
+                poc_support_vector.append((poc_support_for_white_candidates+noise1[i])/num_white_candidates)
         #normalize
         norm = sum(white_support_vector)
         white_support_vector = [x/norm for x in white_support_vector]
