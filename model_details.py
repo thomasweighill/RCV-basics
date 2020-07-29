@@ -324,6 +324,7 @@ def luce_dirichlet(
     num_white_candidates = 3,
     concentration = 1
 ):
+    num_candidates = [num_poc_candidates, num_white_candidates]
     alpha = concentration
     candidates = ['A'+str(x) for x in range(num_poc_candidates)]+['B'+str(x) for x in range(num_white_candidates)]
     race_of_candidate = {x:x[0] for x in candidates}
