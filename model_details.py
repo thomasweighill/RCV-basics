@@ -322,26 +322,26 @@ def luce_dirichlet(
     seats_open = 3,
     num_poc_candidates = 2,
     num_white_candidates = 3,
-    concentration = 1
+    concentrations = [1.0,1.0,1.0,1.0] #poc_for_poc, poc_for_w, w_for_poc, w_for_w
 ):
     num_candidates = [num_poc_candidates, num_white_candidates]
-    alpha = concentration
+    alphas = concentrations
     candidates = ['A'+str(x) for x in range(num_poc_candidates)]+['B'+str(x) for x in range(num_white_candidates)]
     race_of_candidate = {x:x[0] for x in candidates}
     white_support_vector = [-1 for c in candidates]
     poc_support_vector = [-1 for c in candidates]
 
-    noise0 = list(np.random.dirichlet([alpha]*num_candidates[0]))+list(np.random.dirichlet([alpha]*num_candidates[1]))
-    noise1 = list(np.random.dirichlet([alpha]*num_candidates[0]))+list(np.random.dirichlet([alpha]*num_candidates[1]))
+    noise0 = list(np.random.dirichlet([alpha[0]]*num_candidates[0]))+list(np.random.dirichlet([alpha[1]]*num_candidates[1]))
+    noise1 = list(np.random.dirichlet([alpha[2]]*num_candidates[0]))+list(np.random.dirichlet([alpha[3]]*num_candidates[1]))
     white_support_vector = []
     poc_support_vector = []
     for i, (c, r) in enumerate(race_of_candidate.items()):
         if r == 'A':
-            white_support_vector.append((white_support_for_poc_candidates*noise0[i]))
-            poc_support_vector.append((poc_support_for_poc_candidates*noise1[i]))
+            white_support_vector.append((white_support_for_poc_candidates*noise1[i]))
+            poc_support_vector.append((poc_support_for_poc_candidates*noise0[i]))
         elif r == 'B':
-            white_support_vector.append((white_support_for_white_candidates*noise0[i]))
-            poc_support_vector.append((poc_support_for_white_candidates*noise1[i]))
+            white_support_vector.append((white_support_for_white_candidates*noise1[i]))
+            poc_support_vector.append((poc_support_for_white_candidates*noise0[i]))
 
     #simulate
     poc_elected_luce = []
