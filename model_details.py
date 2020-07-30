@@ -331,8 +331,8 @@ def luce_dirichlet(
     white_support_vector = [-1 for c in candidates]
     poc_support_vector = [-1 for c in candidates]
 
-    noise0 = list(np.random.dirichlet([alpha[0]]*num_candidates[0]))+list(np.random.dirichlet([alpha[1]]*num_candidates[1]))
-    noise1 = list(np.random.dirichlet([alpha[2]]*num_candidates[0]))+list(np.random.dirichlet([alpha[3]]*num_candidates[1]))
+    noise0 = list(np.random.dirichlet([alphas[0]]*num_candidates[0]))+list(np.random.dirichlet([alphas[1]]*num_candidates[1]))
+    noise1 = list(np.random.dirichlet([alphas[2]]*num_candidates[0]))+list(np.random.dirichlet([alphas[3]]*num_candidates[1]))
     white_support_vector = []
     poc_support_vector = []
     for i, (c, r) in enumerate(race_of_candidate.items()):
