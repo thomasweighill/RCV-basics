@@ -6,6 +6,7 @@ import numpy as np
 from itertools import permutations, product
 import random
 from vote_transfers import cincinnati_transfer
+from ballot_generators import paired_comparison_mcmc
 
 def Cambridge_ballot_type(
     poc_share = 0.33,
@@ -328,24 +329,23 @@ def luce_dirichlet(
     alphas = concentrations
     candidates = ['A'+str(x) for x in range(num_poc_candidates)]+['B'+str(x) for x in range(num_white_candidates)]
     race_of_candidate = {x:x[0] for x in candidates}
-    white_support_vector = [-1 for c in candidates]
-    poc_support_vector = [-1 for c in candidates]
-
-    noise0 = list(np.random.dirichlet([alphas[0]]*num_candidates[0]))+list(np.random.dirichlet([alphas[1]]*num_candidates[1]))
-    noise1 = list(np.random.dirichlet([alphas[2]]*num_candidates[0]))+list(np.random.dirichlet([alphas[3]]*num_candidates[1]))
-    white_support_vector = []
-    poc_support_vector = []
-    for i, (c, r) in enumerate(race_of_candidate.items()):
-        if r == 'A':
-            white_support_vector.append((white_support_for_poc_candidates*noise1[i]))
-            poc_support_vector.append((poc_support_for_poc_candidates*noise0[i]))
-        elif r == 'B':
-            white_support_vector.append((white_support_for_white_candidates*noise1[i]))
-            poc_support_vector.append((poc_support_for_white_candidates*noise0[i]))
 
     #simulate
     poc_elected_luce = []
     for n in range(num_simulations):
+        #get support vectors
+        noise0 = list(np.random.dirichlet([alphas[0]]*num_candidates[0]))+list(np.random.dirichlet([alphas[1]]*num_candidates[1]))
+        noise1 = list(np.random.dirichlet([alphas[2]]*num_candidates[0]))+list(np.random.dirichlet([alphas[3]]*num_candidates[1]))
+        white_support_vector = []
+        poc_support_vector = []
+        for i, (c, r) in enumerate(race_of_candidate.items()):
+            if r == 'A':
+                white_support_vector.append((white_support_for_poc_candidates*noise1[i]))
+                poc_support_vector.append((poc_support_for_poc_candidates*noise0[i]))
+            elif r == 'B':
+                white_support_vector.append((white_support_for_white_candidates*noise1[i]))
+                poc_support_vector.append((poc_support_for_white_candidates*noise0[i]))
+
         print(".",end="")
         ballots = []
         numballots = num_ballots
@@ -359,6 +359,62 @@ def luce_dirichlet(
           ballots.append(
               np.random.choice(list(race_of_candidate.keys()), size=len(race_of_candidate), p=poc_support_vector, replace=False)
           )
+        #winners
+        winners = cw.rcv_run(ballots, candidates, seats_open, cincinnati_transfer)
+        poc_elected_luce.append(len([w for w in winners if w[0]=='A']))
+
+    return poc_elected_luce
+
+def bradley_terry_dirichlet(
+    poc_share = 0.33,
+    poc_support_for_poc_candidates = 0.7,
+    poc_support_for_white_candidates = 0.3,
+    white_support_for_white_candidates = 0.8,
+    white_support_for_poc_candidates = 0.2,
+    num_ballots = 1000,
+    num_simulations = 100,
+    seats_open = 3,
+    num_poc_candidates = 2,
+    num_white_candidates = 3,
+    concentrations = [1.0,1.0,1.0,1.0] #poc_for_poc, poc_for_w, w_for_poc, w_for_w
+):
+    num_candidates = [num_poc_candidates, num_white_candidates]
+    alphas = concentrations
+    candidates = ['A'+str(x) for x in range(num_poc_candidates)]+['B'+str(x) for x in range(num_white_candidates)]
+    race_of_candidate = {x:x[0] for x in candidates}
+
+    #simulate
+    poc_elected_luce = []
+    for n in range(num_simulations):
+        #get support vectors
+        noise0 = list(np.random.dirichlet([alphas[0]]*num_candidates[0]))+list(np.random.dirichlet([alphas[1]]*num_candidates[1]))
+        noise1 = list(np.random.dirichlet([alphas[2]]*num_candidates[0]))+list(np.random.dirichlet([alphas[3]]*num_candidates[1]))
+        white_support_vector = []
+        poc_support_vector = []
+        for i, (c, r) in enumerate(race_of_candidate.items()):
+            if r == 'A':
+                white_support_vector.append((white_support_for_poc_candidates*noise1[i]))
+                poc_support_vector.append((poc_support_for_poc_candidates*noise0[i]))
+            elif r == 'B':
+                white_support_vector.append((white_support_for_white_candidates*noise1[i]))
+                poc_support_vector.append((poc_support_for_white_candidates*noise0[i]))
+
+        print(".",end="")
+        ballots = []
+        numballots = num_ballots
+        ballots = paired_comparison_mcmc(
+            num_ballots,
+            {
+                0:{x:poc_support_vector[i] for i,x in enumerate(candidates)},
+                1:{x:white_support_vector[i] for i, x in enumerate(candidates)}
+            },
+            None,
+            candidates,
+            {0:poc_share, 1:1-poc_share},
+            [0,1],
+            sample_interval=100,
+            verbose=False
+        )
         #winners
         winners = cw.rcv_run(ballots, candidates, seats_open, cincinnati_transfer)
         poc_elected_luce.append(len([w for w in winners if w[0]=='A']))
