@@ -24,7 +24,7 @@ def Cambridge_ballot_type(
 
     num_candidates = [num_poc_candidates, num_white_candidates]
     minority_share = poc_share
-    preference_strengths = [white_support_for_white_candidates, poc_support_for_poc_candidates]
+    preference_strengths = [poc_support_for_poc_candidates, white_support_for_white_candidates]
     num_seats = seats_open
     poc_elected_Cambridge = defaultdict(list)
     candidates = ['A'+str(x) for x in range(num_poc_candidates)]+['B'+str(x) for x in range(num_white_candidates)]
@@ -167,6 +167,8 @@ def Cambridge_ballot_type(
                 else:
                     ballot.append(candidate_ordering[ballot_type[j]].pop())
             ballots.append(ballot)
+
+            
         winners = cw.rcv_run(
             ballots.copy(),
             candidates,
@@ -405,15 +407,14 @@ def bradley_terry_dirichlet(
         ballots = paired_comparison_mcmc(
             num_ballots,
             {
-                0:{x:poc_support_vector[i] for i,x in enumerate(candidates)},
-                1:{x:white_support_vector[i] for i, x in enumerate(candidates)}
+                0:{x:poc_support_vector[i] for i,x in enumerate(poc_support_vector)},
+                1:{x:white_support_vector[i] for i, x in enumerate(white_support_vector)}
             },
             None,
             candidates,
             {0:poc_share, 1:1-poc_share},
             [0,1],
-            sample_interval=100,
-            verbose=False
+            sample_interval=100
         )
         #winners
         winners = cw.rcv_run(ballots, candidates, seats_open, cincinnati_transfer)
