@@ -168,7 +168,7 @@ def Cambridge_ballot_type(
                     ballot.append(candidate_ordering[ballot_type[j]].pop())
             ballots.append(ballot)
 
-            
+
         winners = cw.rcv_run(
             ballots.copy(),
             candidates,
@@ -190,7 +190,8 @@ def BABABA(
     seats_open = 3,
     num_poc_candidates = 2,
     num_white_candidates = 3,
-    scenarios_to_run = ['A', 'B', 'C', 'D']
+    scenarios_to_run = ['A', 'B', 'C', 'D'],
+    verbose=False
 ):
     candidates = ['A'+str(x) for x in range(num_poc_candidates)]+['B'+str(x) for x in range(num_white_candidates)]
     poc_candidates = [c for c in candidates if c[0]=='A']
@@ -205,30 +206,46 @@ def BABABA(
         minlength = min(len(x), len(y))
         return [z for pair in zip(x[:minlength],y[:minlength]) for z in pair]+x[minlength:]+y[minlength:]
 
-    white_bloc_ballots = {
-        'A':[white_candidates+poc_candidates],
-        'B':[white_candidates+poc_candidates],
-        'C':[list(x)+list(y) for x,y in product(list(permutations(white_candidates)), list(permutations(poc_candidates)))],
-        'D':[list(x)+list(y) for x,y in product(list(permutations(white_candidates)), list(permutations(poc_candidates)))]
-    }
-    white_cross_ballots = {
-        'A':[interleave(poc_candidates, white_candidates)],
-        'B':[interleave(poc_candidates, white_candidates)],
-        'C':[interleave(y,x) for x,y in product(list(permutations(white_candidates)), list(permutations(poc_candidates)))],
-        'D':[interleave(y,x) for x,y in product(list(permutations(white_candidates)), list(permutations(poc_candidates)))]
-    }
-    poc_bloc_ballots = {
-        'A':[poc_candidates+white_candidates],
-        'B':[list(x)+white_candidates for x in list(permutations(poc_candidates))],
-        'C':[list(y)+list(x) for x,y in product(list(permutations(white_candidates)), list(permutations(poc_candidates)))],
-        'D':[poc_candidates+white_candidates],
-    }
-    poc_cross_ballots = {
-        'A':[interleave(white_candidates, poc_candidates)],
-        'B':[interleave(white_candidates,x) for x in list(permutations(poc_candidates))],
-        'C':[interleave(x,y) for x,y in product(list(permutations(white_candidates)), list(permutations(poc_candidates)))],
-        'D':[interleave(white_candidates, poc_candidates)],
-    }
+    def white_bloc_ballots(scenario):
+        if scenario in ['A','B']:
+            return [white_candidates+poc_candidates]
+        else:
+            x = random.sample(white_candidates, len(white_candidates))
+            y = random.sample(poc_candidates, len(poc_candidates))
+            return [list(x) + list(y)]
+
+    def white_cross_ballots(scenario):
+        if scenario in ['A','B']:
+            return [interleave(poc_candidates, white_candidates)]
+        else:
+            x = random.sample(white_candidates, len(white_candidates))
+            y = random.sample(poc_candidates, len(poc_candidates))
+            return  [interleave(y,x)]
+
+    def poc_bloc_ballots(scenario):
+        if scenario in ['A','D']:
+            return [poc_candidates+white_candidates]
+        elif scenario == 'B':
+            x = random.sample(white_candidates, len(white_candidates))
+            y = random.sample(poc_candidates, len(poc_candidates))
+            return  [list(y)+white_candidates]
+        else:
+            x = random.sample(white_candidates, len(white_candidates))
+            y = random.sample(poc_candidates, len(poc_candidates))
+            return [list(y)+list(x)]
+
+    def poc_cross_ballots(scenario):
+        if scenario in ['A', 'D']:
+            return [interleave(white_candidates, poc_candidates)]
+        elif scenario == 'B':
+            x = random.sample(white_candidates, len(white_candidates))
+            y = random.sample(poc_candidates, len(poc_candidates))
+            return [interleave(white_candidates,y)]
+        else:
+            x = random.sample(white_candidates, len(white_candidates))
+            y = random.sample(poc_candidates, len(poc_candidates))
+            return [interleave(x,y)]
+
 
     poc_elected_bababa = {}
     for scenario in scenarios_to_run:
@@ -237,16 +254,21 @@ def BABABA(
         babababallots = []
         #poc bloc
         a = int(num_ballots*poc_share*poc_support_for_poc_candidates)
-        babababallots.extend(random.choices(poc_bloc_ballots[scenario],k=a))
+        babababallots.extend([poc_bloc_ballots(scenario)[0] for x in range(a)])
         #poc cross
         a = int(num_ballots*poc_share*poc_support_for_white_candidates)
-        babababallots.extend(random.choices(poc_cross_ballots[scenario],k=a))
+        babababallots.extend([poc_cross_ballots(scenario)[0] for x in range(a)])
         #white bloc
         a = int(num_ballots*(1-poc_share)*white_support_for_white_candidates)
-        babababallots.extend(random.choices(white_bloc_ballots[scenario],k=a))
+        babababallots.extend([white_bloc_ballots(scenario)[0] for x in range(a)])
         #white cross
         a = int(num_ballots*(1-poc_share)*white_support_for_poc_candidates)
-        babababallots.extend(random.choices(white_cross_ballots[scenario],k=a))
+        babababallots.extend([white_cross_ballots(scenario)[0] for x in range(a)])
+
+        if verbose:
+            print(scenario)
+            print(babababallots)
+
         #winners
         winners = cw.rcv_run(babababallots, candidates, seats_open, cincinnati_transfer)
         poc_elected_bababa[scenario].append(len([w for w in winners if w[0]=='A']))
