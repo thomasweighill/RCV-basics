@@ -429,14 +429,15 @@ def bradley_terry_dirichlet(
         ballots = paired_comparison_mcmc(
             num_ballots,
             {
-                0:{x:poc_support_vector[i] for i,x in enumerate(poc_support_vector)},
-                1:{x:white_support_vector[i] for i, x in enumerate(white_support_vector)}
+                0:{x:poc_support_vector[i] for i,x in enumerate(candidates)},
+                1:{x:white_support_vector[i] for i, x in enumerate(candidates)}
             },
             None,
             candidates,
             {0:poc_share, 1:1-poc_share},
             [0,1],
-            sample_interval=100
+            sample_interval=100,
+            verbose=False
         )
         #winners
         winners = cw.rcv_run(ballots, candidates, seats_open, cincinnati_transfer)
