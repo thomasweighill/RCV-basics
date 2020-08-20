@@ -27,6 +27,7 @@ def Cambridge_ballot_type(
     preference_strengths = [poc_support_for_poc_candidates, white_support_for_white_candidates]
     num_seats = seats_open
     poc_elected_Cambridge = defaultdict(list)
+    poc_elected_Cambridge_atlarge = defaultdict(list)
     candidates = ['A'+str(x) for x in range(num_poc_candidates)]+['B'+str(x) for x in range(num_white_candidates)]
 
     white_candidates = candidates[num_candidates[0]:]
@@ -176,7 +177,14 @@ def Cambridge_ballot_type(
             cincinnati_transfer,
         )
         poc_elected_Cambridge[scenario].append(len([x for x in winners if x[0] == 'A']))
-    return poc_elected_Cambridge
+
+        atlargewinners = cw.at_large_run(
+            ballots.copy(),
+            candidates,
+            num_seats
+        )
+        poc_elected_Cambridge_atlarge[scenario].append(len([x for x in atlargewinners if x[0] == 'A']))
+    return poc_elected_Cambridge, poc_elected_Cambridge_atlarge
 
 
 def BABABA(
@@ -248,8 +256,10 @@ def BABABA(
 
 
     poc_elected_bababa = {}
+    poc_elected_bababa_atlarge = {}
     for scenario in scenarios_to_run:
       poc_elected_bababa[scenario] = []
+      poc_elected_bababa_atlarge[scenario] = []
       for n in range(num_simulations):
         babababallots = []
         #poc bloc
@@ -270,71 +280,12 @@ def BABABA(
             print(babababallots)
 
         #winners
-        winners = cw.rcv_run(babababallots, candidates, seats_open, cincinnati_transfer)
+        winners = cw.rcv_run(babababallots.copy(), candidates, seats_open, cincinnati_transfer)
         poc_elected_bababa[scenario].append(len([w for w in winners if w[0]=='A']))
-    return poc_elected_bababa
+        atlargewinners = cw.at_large_run(babababallots.copy(),candidates,seats_open)
+        poc_elected_bababa_atlarge[scenario].append(len([x for x in atlargewinners if x[0] == 'A']))
+    return poc_elected_bababa, poc_elected_bababa_atlarge
 
-def luce_gaussian(
-    poc_share = 0.33,
-    poc_support_for_poc_candidates = 0.7,
-    poc_support_for_white_candidates = 0.3,
-    white_support_for_white_candidates = 0.8,
-    white_support_for_poc_candidates = 0.2,
-    num_ballots = 1000,
-    num_simulations = 100,
-    seats_open = 3,
-    num_poc_candidates = 2,
-    num_white_candidates = 3,
-    standard_deviation = 0.1
-):
-    candidates = ['A'+str(x) for x in range(num_poc_candidates)]+['B'+str(x) for x in range(num_white_candidates)]
-    race_of_candidate = {x:x[0] for x in candidates}
-    white_support_vector = [-1 for c in candidates]
-    poc_support_vector = [-1 for c in candidates]
-
-    #add noise and reject any support values < 0 or > 1
-    while (any([
-             (x<0 or x>1) for i in [0,1]
-             for x in white_support_vector+poc_support_vector]
-           )):
-        white_support_vector = []
-        poc_support_vector = []
-        noise0 = np.random.normal(0,standard_deviation,size=len(candidates))
-        noise1 = np.random.normal(0,standard_deviation,size=len(candidates))
-        for i, (c, r) in enumerate(race_of_candidate.items()):
-            if r == 'A':
-                white_support_vector.append((white_support_for_poc_candidates+noise0[i])/num_poc_candidates)
-                poc_support_vector.append((poc_support_for_poc_candidates+noise1[i])/num_poc_candidates)
-            elif r == 'B':
-                white_support_vector.append((white_support_for_white_candidates+noise0[i])/num_white_candidates)
-                poc_support_vector.append((poc_support_for_white_candidates+noise1[i])/num_white_candidates)
-        #normalize
-        norm = sum(white_support_vector)
-        white_support_vector = [x/norm for x in white_support_vector]
-        norm = sum(poc_support_vector)
-        poc_support_vector = [x/norm for x in poc_support_vector]
-
-    #simulate
-    poc_elected_luce = []
-    for n in range(num_simulations):
-        print(".",end="")
-        ballots = []
-        numballots = num_ballots
-        #white
-        for i in range(int(numballots*(1-poc_share))):
-          ballots.append(
-              np.random.choice(list(race_of_candidate.keys()), size=len(race_of_candidate), p=white_support_vector, replace=False)
-          )
-        #poc
-        for i in range(int(numballots*poc_share)):
-          ballots.append(
-              np.random.choice(list(race_of_candidate.keys()), size=len(race_of_candidate), p=poc_support_vector, replace=False)
-          )
-        #winners
-        winners = cw.rcv_run(ballots, candidates, seats_open, cincinnati_transfer)
-        poc_elected_luce.append(len([w for w in winners if w[0]=='A']))
-
-    return poc_elected_luce
 
 def luce_dirichlet(
     poc_share = 0.33,
@@ -356,6 +307,7 @@ def luce_dirichlet(
 
     #simulate
     poc_elected_luce = []
+    poc_elected_luce_atlarge = []
     for n in range(num_simulations):
         #get support vectors
         noise0 = list(np.random.dirichlet([alphas[0]]*num_candidates[0]))+list(np.random.dirichlet([alphas[1]]*num_candidates[1]))
@@ -384,10 +336,12 @@ def luce_dirichlet(
               np.random.choice(list(race_of_candidate.keys()), size=len(race_of_candidate), p=poc_support_vector, replace=False)
           )
         #winners
-        winners = cw.rcv_run(ballots, candidates, seats_open, cincinnati_transfer)
+        winners = cw.rcv_run(ballots.copy(), candidates, seats_open, cincinnati_transfer)
         poc_elected_luce.append(len([w for w in winners if w[0]=='A']))
+        atlargewinners = cw.at_large_run(ballots.copy(),candidates,seats_open)
+        poc_elected_luce_atlarge.append(len([x for x in atlargewinners if x[0] == 'A']))
 
-    return poc_elected_luce
+    return poc_elected_luce, poc_elected_luce_atlarge
 
 def bradley_terry_dirichlet(
     poc_share = 0.33,
@@ -408,7 +362,8 @@ def bradley_terry_dirichlet(
     race_of_candidate = {x:x[0] for x in candidates}
 
     #simulate
-    poc_elected_luce = []
+    poc_elected = []
+    poc_elected_atlarge = []
     for n in range(num_simulations):
         #get support vectors
         noise0 = list(np.random.dirichlet([alphas[0]]*num_candidates[0]))+list(np.random.dirichlet([alphas[1]]*num_candidates[1]))
@@ -440,7 +395,9 @@ def bradley_terry_dirichlet(
             verbose=False
         )
         #winners
-        winners = cw.rcv_run(ballots, candidates, seats_open, cincinnati_transfer)
-        poc_elected_luce.append(len([w for w in winners if w[0]=='A']))
+        winners = cw.rcv_run(ballots.copy(), candidates, seats_open, cincinnati_transfer)
+        poc_elected.append(len([w for w in winners if w[0]=='A']))
+        atlargewinners = cw.at_large_run(ballots.copy(),candidates,seats_open)
+        poc_elected_atlarge.append(len([x for x in atlargewinners if x[0] == 'A']))
 
-    return poc_elected_luce
+    return poc_elected, poc_elected_atlarge

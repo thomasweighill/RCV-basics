@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 import random, sys
 import compute_winners as cw
 from vote_transfers import cincinnati_transfer
-from model_details import Cambridge_ballot_type, BABABA, luce_gaussian, luce_dirichlet, bradley_terry_dirichlet
+from model_details import Cambridge_ballot_type, BABABA, luce_dirichlet, bradley_terry_dirichlet
 
 
 ### Global variables
@@ -25,8 +25,8 @@ poc_support_for_poc_candidates = 1.0-1e-5
 poc_support_for_white_candidates = 1e-5
 white_support_for_white_candidates = 1.0-1e-5
 white_support_for_poc_candidates = 1e-5
-num_ballots = 1000
-num_simulations = 100
+num_ballots = 100
+num_simulations = 1
 seats_open = 7
 num_poc_candidates = 7
 num_white_candidates = 7
@@ -47,9 +47,10 @@ concentration_list = [[0.5]*4, [2,0.5,0.5,0.5], [2,2,2,2], [2,2,0.5,0.5], [1.0]*
 
 #simulate
 poc_elected_luce_dirichlet = []
+poc_elected_luce_dirichlet_atlarge = []
 for i, concentrations in enumerate(concentration_list):
   print(concentrations)
-  poc_elected_luce_dirichlet.append(luce_dirichlet(
+  poc_elected_rcv, poc_elected_atlarge = luce_dirichlet(
       poc_share = poc_share,
       poc_support_for_poc_candidates = poc_support_for_poc_candidates,
       poc_support_for_white_candidates = poc_support_for_white_candidates,
@@ -61,13 +62,15 @@ for i, concentrations in enumerate(concentration_list):
       num_poc_candidates = num_poc_candidates,
       num_white_candidates = num_white_candidates,
       concentrations = concentrations
-  ))
+  )
+  poc_elected_luce_dirichlet.append(poc_elected_rcv)
+  poc_elected_luce_dirichlet_atlarge.append(poc_elected_atlarge)
   print("\n")
 
 
 print("Plackett-Luce Dirichelet predictions in order:")
 for i, c in enumerate(concentration_list[:-1]):
-  print(np.mean(poc_elected_luce_dirichlet[i]), "&", end=" ")
+  print("{:.1f} ({:.1f}) &".format(np.mean(poc_elected_luce_dirichlet[i]), np.mean(poc_elected_luce_dirichlet_atlarge[i])), end=" ")
 print(np.mean(poc_elected_luce_dirichlet[-1]))
 
 ### Bradley-Terry (Dirichlet variation)
@@ -78,9 +81,11 @@ concentration_list = [[0.5]*4, [2,0.5,0.5,0.5], [2,2,2,2], [2,2,0.5,0.5], [1.0]*
 
 #simulate
 poc_elected_bradley_terry_dirichlet = []
+poc_elected_bradley_terry_dirichlet_atlarge = []
+
 for i, concentrations in enumerate(concentration_list):
   print(concentrations)
-  poc_elected_bradley_terry_dirichlet.append(bradley_terry_dirichlet(
+  poc_elected_rcv, poc_elected_atlarge = bradley_terry_dirichlet(
       poc_share = poc_share,
       poc_support_for_poc_candidates = poc_support_for_poc_candidates,
       poc_support_for_white_candidates = poc_support_for_white_candidates,
@@ -92,18 +97,20 @@ for i, concentrations in enumerate(concentration_list):
       num_poc_candidates = num_poc_candidates,
       num_white_candidates = num_white_candidates,
       concentrations = concentrations
-  ))
+  )
+  poc_elected_bradley_terry_dirichlet.append(poc_elected_rcv)
+  poc_elected_bradley_terry_dirichlet_atlarge.append(poc_elected_atlarge)
   print("\n")
 
 print("Bradley-Terry Dirichelet predictions in order:")
 for i, c in enumerate(concentration_list[:-1]):
-  print(np.mean(poc_elected_bradley_terry_dirichlet[i]), "&", end=" ")
-print(np.mean(poc_elected_bradley_terry_dirichlet[-1]))
+  print("{:.1f} ({:.1f}) &".format(np.mean(poc_elected_bradley_terry_dirichlet[i]), np.mean(poc_elected_bradley_terry_dirichlet_atlarge[i])), end=" ")
+print("{:.1f} ({:.1f})".format(np.mean(poc_elected_bradley_terry_dirichlet[-1]), np.mean(poc_elected_bradley_terry_dirichlet_atlarge[-1])))
 
 ### Alternating crossover model
 
 #simulate
-poc_elected_bababa = BABABA(
+poc_elected_bababa,  poc_elected_bababa_atlarge = BABABA(
     poc_share = poc_share,
     poc_support_for_poc_candidates = poc_support_for_poc_candidates,
     poc_support_for_white_candidates = poc_support_for_white_candidates,
@@ -120,13 +127,16 @@ poc_elected_bababa = BABABA(
 
 print("Alternating crossover predictions in order:")
 for i, c in enumerate(['A', 'B', 'C', 'D']):
-  print(np.mean(poc_elected_bababa[c]), "&", end=" ")
-print(np.mean([np.mean(poc_elected_bababa[c]) for c in ['A', 'B', 'C', 'D']]))
+  print("{:.1f} ({:.1f}) &".format(np.mean(poc_elected_bababa[c]), np.mean(poc_elected_bababa_atlarge[c])), end=" ")
+print("{:.1f} ({:.1f})".format(
+  np.mean([np.mean(poc_elected_bababa[c]) for c in ['A', 'B', 'C', 'D']]),
+  np.mean([np.mean(poc_elected_bababa_atlarge[c]) for c in ['A', 'B', 'C', 'D']])
+))
 
 ### Cambridge ballot types
 
 #simulate
-poc_elected_Cambridge = Cambridge_ballot_type(
+poc_elected_Cambridge, poc_elected_Cambridge_atlarge = Cambridge_ballot_type(
     poc_share = poc_share,
     poc_support_for_poc_candidates = poc_support_for_poc_candidates,
     poc_support_for_white_candidates = poc_support_for_white_candidates,
@@ -142,5 +152,8 @@ poc_elected_Cambridge = Cambridge_ballot_type(
 
 print("Cambridge sampler predictions in order:")
 for i, c in enumerate(['A', 'B', 'C', 'D']):
-  print(np.mean(poc_elected_Cambridge[c]), "&", end=" ")
-print(np.mean([np.mean(poc_elected_Cambridge[c]) for c in ['A', 'B', 'C', 'D']]))
+  print("{:.1f} ({:.1f}) &".format(np.mean(poc_elected_Cambridge[c]), np.mean(poc_elected_Cambridge_atlarge[c])), end=" ")
+print("{:.1f} ({:.1f})".format(
+  np.mean([np.mean(poc_elected_Cambridge[c]) for c in ['A', 'B', 'C', 'D']]),
+  np.mean([np.mean(poc_elected_Cambridge_atlarge[c]) for c in ['A', 'B', 'C', 'D']])
+))
