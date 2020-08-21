@@ -30,7 +30,8 @@ num_simulations = 1
 seats_open = 7
 num_poc_candidates = 7
 num_white_candidates = 7
-run_at_large_as_well = True
+run_at_large_as_well = False
+max_ballot_length = None
 
 print(sys.argv[0])
 for s in [
@@ -62,7 +63,8 @@ for i, concentrations in enumerate(concentration_list):
       seats_open = seats_open,
       num_poc_candidates = num_poc_candidates,
       num_white_candidates = num_white_candidates,
-      concentrations = concentrations
+      concentrations = concentrations,
+      max_ballot_length = max_ballot_length
   )
   poc_elected_luce_dirichlet.append(poc_elected_rcv)
   poc_elected_luce_dirichlet_atlarge.append(poc_elected_atlarge)
@@ -102,7 +104,8 @@ for i, concentrations in enumerate(concentration_list):
       seats_open = seats_open,
       num_poc_candidates = num_poc_candidates,
       num_white_candidates = num_white_candidates,
-      concentrations = concentrations
+      concentrations = concentrations,
+      max_ballot_length = max_ballot_length
   )
   poc_elected_bradley_terry_dirichlet.append(poc_elected_rcv)
   poc_elected_bradley_terry_dirichlet_atlarge.append(poc_elected_atlarge)
@@ -132,7 +135,8 @@ poc_elected_bababa,  poc_elected_bababa_atlarge = BABABA(
     num_poc_candidates = num_poc_candidates,
     num_white_candidates = num_white_candidates,
     scenarios_to_run = ['A', 'B', 'C', 'D'],
-    verbose=False
+    verbose=False,
+    max_ballot_length = max_ballot_length
 )
 
 print("\n Alternating crossover predictions in order:")
@@ -165,7 +169,8 @@ poc_elected_Cambridge, poc_elected_Cambridge_atlarge = Cambridge_ballot_type(
     seats_open = seats_open,
     num_poc_candidates = num_poc_candidates,
     num_white_candidates = num_white_candidates,
-    scenarios_to_run = ['A', 'B', 'C', 'D']
+    scenarios_to_run = ['A', 'B', 'C', 'D'],
+    max_ballot_length = max_ballot_length
 )
 
 print("\n Cambridge sampler predictions in order:")
