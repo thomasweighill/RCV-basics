@@ -30,6 +30,7 @@ num_simulations = 1
 seats_open = 7
 num_poc_candidates = 7
 num_white_candidates = 7
+run_at_large_as_well = True
 
 print(sys.argv[0])
 for s in [
@@ -68,10 +69,15 @@ for i, concentrations in enumerate(concentration_list):
   print("\n")
 
 
-print("Plackett-Luce Dirichelet predictions in order:")
-for i, c in enumerate(concentration_list[:-1]):
-  print("{:.1f} ({:.1f}) &".format(np.mean(poc_elected_luce_dirichlet[i]), np.mean(poc_elected_luce_dirichlet_atlarge[i])), end=" ")
-print(np.mean(poc_elected_luce_dirichlet[-1]))
+print("\n Plackett-Luce Dirichlet predictions in order:")
+if run_at_large_as_well:
+    for i, c in enumerate(concentration_list[:-1]):
+      print("{:.1f} ({:.1f}) &".format(np.mean(poc_elected_luce_dirichlet[i]), np.mean(poc_elected_luce_dirichlet_atlarge[i])), end=" ")
+    print("{:.1f} ({:.1f})".format(np.mean(poc_elected_luce_dirichlet[-1]), np.mean(poc_elected_luce_dirichlet_atlarge[-1])))
+else:
+    for i, c in enumerate(concentration_list[:-1]):
+      print("{:.1f}  &".format(np.mean(poc_elected_luce_dirichlet[i]), np.mean(poc_elected_luce_dirichlet_atlarge[i])), end=" ")
+    print("{:.1f} ".format(np.mean(poc_elected_luce_dirichlet[-1]), np.mean(poc_elected_luce_dirichlet_atlarge[-1])))
 
 ### Bradley-Terry (Dirichlet variation)
 concentrations = [0.5]*4 #>>1 means very similar supports, <<1 means most support goes to one or two candidates
@@ -102,11 +108,15 @@ for i, concentrations in enumerate(concentration_list):
   poc_elected_bradley_terry_dirichlet_atlarge.append(poc_elected_atlarge)
   print("\n")
 
-print("Bradley-Terry Dirichelet predictions in order:")
-for i, c in enumerate(concentration_list[:-1]):
-  print("{:.1f} ({:.1f}) &".format(np.mean(poc_elected_bradley_terry_dirichlet[i]), np.mean(poc_elected_bradley_terry_dirichlet_atlarge[i])), end=" ")
-print("{:.1f} ({:.1f})".format(np.mean(poc_elected_bradley_terry_dirichlet[-1]), np.mean(poc_elected_bradley_terry_dirichlet_atlarge[-1])))
-
+print("\n Bradley-Terry Dirichlet predictions in order:")
+if run_at_large_as_well:
+    for i, c in enumerate(concentration_list[:-1]):
+      print("{:.1f} ({:.1f}) &".format(np.mean(poc_elected_bradley_terry_dirichlet[i]), np.mean(poc_elected_bradley_terry_dirichlet_atlarge[i])), end=" ")
+    print("{:.1f} ({:.1f})".format(np.mean(poc_elected_bradley_terry_dirichlet[-1]), np.mean(poc_elected_bradley_terry_dirichlet_atlarge[-1])))
+else:
+    for i, c in enumerate(concentration_list[:-1]):
+      print("{:.1f}  &".format(np.mean(poc_elected_bradley_terry_dirichlet[i]), np.mean(poc_elected_bradley_terry_dirichlet_atlarge[i])), end=" ")
+    print("{:.1f} ".format(np.mean(poc_elected_bradley_terry_dirichlet[-1]), np.mean(poc_elected_bradley_terry_dirichlet_atlarge[-1])))
 ### Alternating crossover model
 
 #simulate
@@ -125,13 +135,21 @@ poc_elected_bababa,  poc_elected_bababa_atlarge = BABABA(
     verbose=False
 )
 
-print("Alternating crossover predictions in order:")
-for i, c in enumerate(['A', 'B', 'C', 'D']):
-  print("{:.1f} ({:.1f}) &".format(np.mean(poc_elected_bababa[c]), np.mean(poc_elected_bababa_atlarge[c])), end=" ")
-print("{:.1f} ({:.1f})".format(
-  np.mean([np.mean(poc_elected_bababa[c]) for c in ['A', 'B', 'C', 'D']]),
-  np.mean([np.mean(poc_elected_bababa_atlarge[c]) for c in ['A', 'B', 'C', 'D']])
-))
+print("\n Alternating crossover predictions in order:")
+if run_at_large_as_well:
+    for i, c in enumerate(['A', 'B', 'C', 'D']):
+      print("{:.1f} ({:.1f}) &".format(np.mean(poc_elected_bababa[c]), np.mean(poc_elected_bababa_atlarge[c])), end=" ")
+    print("{:.1f} ({:.1f})".format(
+      np.mean([np.mean(poc_elected_bababa[c]) for c in ['A', 'B', 'C', 'D']]),
+      np.mean([np.mean(poc_elected_bababa_atlarge[c]) for c in ['A', 'B', 'C', 'D']])
+    ))
+else:
+    for i, c in enumerate(['A', 'B', 'C', 'D']):
+      print("{:.1f} &".format(np.mean(poc_elected_bababa[c]), np.mean(poc_elected_bababa_atlarge[c])), end=" ")
+    print("{:.1f} ".format(
+      np.mean([np.mean(poc_elected_bababa[c]) for c in ['A', 'B', 'C', 'D']]),
+      np.mean([np.mean(poc_elected_bababa_atlarge[c]) for c in ['A', 'B', 'C', 'D']])
+    ))
 
 ### Cambridge ballot types
 
@@ -150,10 +168,18 @@ poc_elected_Cambridge, poc_elected_Cambridge_atlarge = Cambridge_ballot_type(
     scenarios_to_run = ['A', 'B', 'C', 'D']
 )
 
-print("Cambridge sampler predictions in order:")
-for i, c in enumerate(['A', 'B', 'C', 'D']):
-  print("{:.1f} ({:.1f}) &".format(np.mean(poc_elected_Cambridge[c]), np.mean(poc_elected_Cambridge_atlarge[c])), end=" ")
-print("{:.1f} ({:.1f})".format(
-  np.mean([np.mean(poc_elected_Cambridge[c]) for c in ['A', 'B', 'C', 'D']]),
-  np.mean([np.mean(poc_elected_Cambridge_atlarge[c]) for c in ['A', 'B', 'C', 'D']])
-))
+print("\n Cambridge sampler predictions in order:")
+if run_at_large_as_well:
+    for i, c in enumerate(['A', 'B', 'C', 'D']):
+      print("{:.1f} ({:.1f}) &".format(np.mean(poc_elected_Cambridge[c]), np.mean(poc_elected_Cambridge_atlarge[c])), end=" ")
+    print("{:.1f} ({:.1f})".format(
+      np.mean([np.mean(poc_elected_Cambridge[c]) for c in ['A', 'B', 'C', 'D']]),
+      np.mean([np.mean(poc_elected_Cambridge_atlarge[c]) for c in ['A', 'B', 'C', 'D']])
+    ))
+else:
+    for i, c in enumerate(['A', 'B', 'C', 'D']):
+      print("{:.1f} &".format(np.mean(poc_elected_Cambridge[c]), np.mean(poc_elected_Cambridge_atlarge[c])), end=" ")
+    print("{:.1f} ".format(
+      np.mean([np.mean(poc_elected_Cambridge[c]) for c in ['A', 'B', 'C', 'D']]),
+      np.mean([np.mean(poc_elected_Cambridge_atlarge[c]) for c in ['A', 'B', 'C', 'D']])
+    ))

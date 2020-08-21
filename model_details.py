@@ -19,9 +19,12 @@ def Cambridge_ballot_type(
     seats_open = 3,
     num_poc_candidates = 2,
     num_white_candidates = 3,
-    scenarios_to_run = ['A', 'B', 'C', 'D']
+    scenarios_to_run = ['A', 'B', 'C', 'D'],
+    max_ballot_length = None,
+    verbose=False
 ):
-
+    if max_ballot_length == None:
+        max_ballot_length = num_poc_candidates+num_white_candidates
     num_candidates = [num_poc_candidates, num_white_candidates]
     minority_share = poc_share
     preference_strengths = [poc_support_for_poc_candidates, white_support_for_white_candidates]
@@ -61,14 +64,13 @@ def Cambridge_ballot_type(
       for n in range(num_simulations):
         print('.', end="")
         ballots = []
-        ballot_length = len(candidates)
 
         #white voters white first
         for b in range(int(num_ballots*(1-minority_share)*preference_strengths[1])):
             ballot_type = list(choice(
                     list(white_first_probs.keys()),
                     p=list(white_first_probs.values())
-            ))[:ballot_length]
+            ))[:max_ballot_length]
             ballot = []
             if scenario in ['C', 'D']:
                  candidate_ordering = {
@@ -85,14 +87,14 @@ def Cambridge_ballot_type(
                     break
                 else:
                     ballot.append(candidate_ordering[ballot_type[j]].pop())
-            ballots.append(ballot)
+            ballots.append(ballot[:max_ballot_length])
 
         #white voters poc first
         for b in range(int(num_ballots*(1-minority_share)*(1-preference_strengths[1]))):
             ballot_type = list(choice(
                     list(poc_first_probs.keys()),
                     p=list(poc_first_probs.values())
-            ))[:ballot_length]
+            ))[:max_ballot_length]
             ballot = []
             if scenario in ['C', 'D']:
                  candidate_ordering = {
@@ -109,14 +111,14 @@ def Cambridge_ballot_type(
                     break
                 else:
                     ballot.append(candidate_ordering[ballot_type[j]].pop())
-            ballots.append(ballot)
+            ballots.append(ballot[:max_ballot_length])
 
         #poc voters poc first
         for b in range(int(num_ballots*(minority_share)*preference_strengths[0])):
             ballot_type = list(choice(
                     list(poc_first_probs.keys()),
                     p=list(poc_first_probs.values())
-            ))[:ballot_length]
+            ))[:max_ballot_length]
             ballot = []
             if scenario in ['B']:
                  candidate_ordering = {
@@ -138,14 +140,14 @@ def Cambridge_ballot_type(
                     break
                 else:
                     ballot.append(candidate_ordering[ballot_type[j]].pop())
-            ballots.append(ballot)
+            ballots.append(ballot[:max_ballot_length])
 
         #poc voters white first
         for b in range(int(num_ballots*(minority_share)*(1-preference_strengths[0]))):
             ballot_type = list(choice(
                     list(white_first_probs.keys()),
                     p=list(white_first_probs.values())
-            ))[:ballot_length]
+            ))[:max_ballot_length]
             ballot = []
             if scenario in ['B']:
                  candidate_ordering = {
@@ -167,9 +169,7 @@ def Cambridge_ballot_type(
                     break
                 else:
                     ballot.append(candidate_ordering[ballot_type[j]].pop())
-            ballots.append(ballot)
-
-
+            ballots.append(ballot[:max_ballot_length])
         winners = cw.rcv_run(
             ballots.copy(),
             candidates,
@@ -199,8 +199,11 @@ def BABABA(
     num_poc_candidates = 2,
     num_white_candidates = 3,
     scenarios_to_run = ['A', 'B', 'C', 'D'],
+    max_ballot_length = None,
     verbose=False
 ):
+    if max_ballot_length == None:
+        max_ballot_length = num_poc_candidates+num_white_candidates
     candidates = ['A'+str(x) for x in range(num_poc_candidates)]+['B'+str(x) for x in range(num_white_candidates)]
     poc_candidates = [c for c in candidates if c[0]=='A']
     white_candidates = [c for c in candidates if c[0]=='B']
@@ -264,16 +267,16 @@ def BABABA(
         babababallots = []
         #poc bloc
         a = int(num_ballots*poc_share*poc_support_for_poc_candidates)
-        babababallots.extend([poc_bloc_ballots(scenario)[0] for x in range(a)])
+        babababallots.extend([poc_bloc_ballots(scenario)[0][:max_ballot_length] for x in range(a)])
         #poc cross
         a = int(num_ballots*poc_share*poc_support_for_white_candidates)
-        babababallots.extend([poc_cross_ballots(scenario)[0] for x in range(a)])
+        babababallots.extend([poc_cross_ballots(scenario)[0][:max_ballot_length] for x in range(a)])
         #white bloc
         a = int(num_ballots*(1-poc_share)*white_support_for_white_candidates)
-        babababallots.extend([white_bloc_ballots(scenario)[0] for x in range(a)])
+        babababallots.extend([white_bloc_ballots(scenario)[0][:max_ballot_length] for x in range(a)])
         #white cross
         a = int(num_ballots*(1-poc_share)*white_support_for_poc_candidates)
-        babababallots.extend([white_cross_ballots(scenario)[0] for x in range(a)])
+        babababallots.extend([white_cross_ballots(scenario)[0][:max_ballot_length] for x in range(a)])
 
         if verbose:
             print(scenario)
@@ -298,8 +301,11 @@ def luce_dirichlet(
     seats_open = 3,
     num_poc_candidates = 2,
     num_white_candidates = 3,
-    concentrations = [1.0,1.0,1.0,1.0] #poc_for_poc, poc_for_w, w_for_poc, w_for_w
+    concentrations = [1.0,1.0,1.0,1.0], #poc_for_poc, poc_for_w, w_for_poc, w_for_w.
+    max_ballot_length = None
 ):
+    if max_ballot_length == None:
+        max_ballot_length = num_poc_candidates+num_white_candidates
     num_candidates = [num_poc_candidates, num_white_candidates]
     alphas = concentrations
     candidates = ['A'+str(x) for x in range(num_poc_candidates)]+['B'+str(x) for x in range(num_white_candidates)]
@@ -336,6 +342,7 @@ def luce_dirichlet(
               np.random.choice(list(race_of_candidate.keys()), size=len(race_of_candidate), p=poc_support_vector, replace=False)
           )
         #winners
+        ballots = [b[:max_ballot_length] for b in ballots]
         winners = cw.rcv_run(ballots.copy(), candidates, seats_open, cincinnati_transfer)
         poc_elected_luce.append(len([w for w in winners if w[0]=='A']))
         atlargewinners = cw.at_large_run(ballots.copy(),candidates,seats_open)
@@ -354,8 +361,11 @@ def bradley_terry_dirichlet(
     seats_open = 3,
     num_poc_candidates = 2,
     num_white_candidates = 3,
-    concentrations = [1.0,1.0,1.0,1.0] #poc_for_poc, poc_for_w, w_for_poc, w_for_w
+    concentrations = [1.0,1.0,1.0,1.0], #poc_for_poc, poc_for_w, w_for_poc, w_for_w
+    max_ballot_length = None
 ):
+    if max_ballot_length == None:
+        max_ballot_length = num_poc_candidates+num_white_candidates
     num_candidates = [num_poc_candidates, num_white_candidates]
     alphas = concentrations
     candidates = ['A'+str(x) for x in range(num_poc_candidates)]+['B'+str(x) for x in range(num_white_candidates)]
@@ -391,10 +401,11 @@ def bradley_terry_dirichlet(
             candidates,
             {0:poc_share, 1:1-poc_share},
             [0,1],
-            sample_interval=100,
+            sample_interval=10,
             verbose=False
         )
         #winners
+        ballots = [b[:max_ballot_length] for b in ballots]
         winners = cw.rcv_run(ballots.copy(), candidates, seats_open, cincinnati_transfer)
         poc_elected.append(len([w for w in winners if w[0]=='A']))
         atlargewinners = cw.at_large_run(ballots.copy(),candidates,seats_open)

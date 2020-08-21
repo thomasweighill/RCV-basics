@@ -1,0 +1,44 @@
+%%%%%%%%%%%
+%A template for completing the RCV analysis part of a report
+%the rows of the table are printed with & separators by the .py file.
+%You may want to have multiple tables for different settings (e.g. fewer candidates for one group).
+%%%%%%%%%%%%
+
+\documentclass{report}
+\usepackage{xspace}
+
+\newcommand{\POC}{POC\xspace} %could also be e.g. Black, Hispanic etc.
+
+\begin{document}
+
+We use four different models to estimate minority representation under ranked choice voting. All the models take a very simple input consisting of two values: (1) the support from \POC voters for \POC candidates, and (2) the support from non-\POC voters for \POC candidates. The Placket-Luce-Dirichlet (PL-D) and Bradley-Terry-Dirichlet (BT-D) models rely on classical probabilistic models of ranking from the literature. The Alternating crossover (AC) and Cambridge sampler (CS) models rely on specific assumptions on how voters vote: the AC model assumes that crossover voters alternate between outgroup and ingroup candidates, while the CS model uses ballot data from a decade's worth of Cambridge MA city council races (which were ranked choice) to model voter behavior. We also consider five scenarios of how voters divide their support among non-\POC and \POC candidates.
+
+Scenario A: unanimous order (all voters agree on who are the best candidates in each group).
+
+Scenario B: \POC vary \POC (POC voters vary preferences among \POC candidates).
+
+Scenario C: all vary order (no agreement on strongest candidates).
+
+Scenario D: non-\POC vary non-\POC (non-\POC voters don’t agree on strongest candidates).
+
+Scenario E: generic (all levels of agreement equally likely).
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{ |l||c|c|c|c|c| }
+\hline
+ & Scenario A & Scenario B & Scenario C & Scenario D & Scenario E \\
+ \hline
+\hline
+PL-D  & ? & ? & ? & ? & ? \\
+\hline
+BT-D  & ? & ? & ? & ? & ?  \\
+\hline
+AC & ? & ? & ? & ? & ? \\
+\hline
+CS & ? & ? & ? & ? & ? \\
+\hline
+\end{tabular}
+\end{table}
+
+\end{document}
