@@ -8,6 +8,15 @@ import random
 from vote_transfers import cincinnati_transfer
 from ballot_generators import paired_comparison_mcmc
 
+def sum_to_one(list_of_vectors):
+    '''
+    Fixes small errors in place to make sure vectors sum to 1
+    '''
+    for v in list_of_vectors:
+        n = np.argmax(v) #fix highest value
+        v[n] = 1-sum([x for i,x in enumerate(v) if i!=n])
+
+
 def Cambridge_ballot_type(
     poc_share = 0.33,
     poc_support_for_poc_candidates = 0.7,
@@ -60,9 +69,7 @@ def Cambridge_ballot_type(
     poc_first_probs = consolidated_probs
 
     for scenario in scenarios_to_run:
-      print("\n", scenario)
       for n in range(num_simulations):
-        print('.', end="")
         ballots = []
 
         #white voters white first
@@ -327,10 +334,9 @@ def luce_dirichlet(
             elif r == 'B':
                 white_support_vector.append((white_support_for_white_candidates*noise1[i]))
                 poc_support_vector.append((poc_support_for_white_candidates*noise0[i]))
-
-        print(".",end="")
         ballots = []
         numballots = num_ballots
+        sum_to_one([white_support_vector, poc_support_vector])
         #white
         for i in range(int(numballots*(1-poc_share))):
           ballots.append(
@@ -388,7 +394,6 @@ def bradley_terry_dirichlet(
                 white_support_vector.append((white_support_for_white_candidates*noise1[i]))
                 poc_support_vector.append((poc_support_for_white_candidates*noise0[i]))
 
-        print(".",end="")
         ballots = []
         numballots = num_ballots
         ballots = paired_comparison_mcmc(
