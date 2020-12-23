@@ -42,9 +42,8 @@ for s in [
 
 
 ### Luce model (Dirichlet variation)
-concentrations = [0.5]*4 #>>1 means very similar supports, <<1 means most support goes to one or two candidates
 #list goes [poc_for_poc, poc_for_white, white_for_poc, white_for_white]
-concentration_list = [[0.5]*4, [2,0.5,0.5,0.5], [2,2,2,2], [2,2,0.5,0.5], [1.0]*4]
+concentration_list = [[0.5]*4, [2,0.5,0.5,0.5], [2,2,2,2], [0.5,0.5,2,2], [1.0]*4]
 
 
 #simulate
